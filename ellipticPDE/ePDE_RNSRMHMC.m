@@ -174,7 +174,7 @@ for IterationNum = 1:NumOfIterations
         disp('Burn-in complete, now drawing samples.')
         base = min(Ytr); Ytr = Ytr - base;
         net = networkApprox([D,1000,1]);
-        net = train(net,Xtr,Ytr,1e-02);
+        net = train(net,Xtr,Ytr,1e-07);
         tic;
     end
             
