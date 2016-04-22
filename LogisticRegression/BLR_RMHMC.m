@@ -41,7 +41,6 @@ CurrentU = U(y,X,CurrentBeta,alpha);
 for d = 1:D
     GDeriv{d} = zeros(D);
 end
-Times = [0];
 
 % Random numbers
 % randn('state',2015);
