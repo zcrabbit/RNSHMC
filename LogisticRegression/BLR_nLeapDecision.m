@@ -1,113 +1,108 @@
-%% compare sampling efficiency with different Leapfrog steps
+%% compare sampling efficiency with different Leapfrog steps and step sizes
 %% Simulated 50D
-load simulated50d/lrdata
-%nLeapSimu = [3 6 12 18 24 30];
 % stepsize = 0.045
 nLeapSimu = [2 5 10 20 30];
 stepsizes = [0.01 0.025 0.05 0.075 0.1];
-nrep = 1;
+nrep = 5;
 
 for nr = 1:nrep
     for nL = nLeapSimu
         for stepsize = stepsizes
-            [betaPosterior,Times,acprat] = BLR_HMC(y,X,stepsize,nL,'2dSimulation');
+            [betaPosterior,Times,acprat] = BLR_HMC(stepsize,nL,'simulation');
         end
     end
 end
 
 %% a9a adult
 % stepsize = 0.012
-load Data/a9a60d
 nLeapA9a = [5,10,20,30,50];
 stepsizes = [0.004 0.008 0.012 0.016 0.020]; 
-nrep = 1;
+nrep = 5;
 
 for nr = 1:nrep
     for nL = nLeapA9a
         for stepsize = stepsizes
-            [betaPosterior,Times,acprat] = BLR_HMC(y,X,stepsize,nL,'2da9a60d');
+            [betaPosterior,Times,acprat] = BLR_HMC(stepsize,nL,'a9a60d');
         end
     end
 end
 
 %% bank marketing 
-load bankmarketing/lrbanknorm
 % stepsize = 0.012
-nLeapBank = [15 30 45 60 75 90];
+nLeapBank = [30 45 60 75 90];
 stepsizes = [0.004 0.008 0.012 0.014 0.015];
 nrep = 5;
 
 for nr = 1:nrep
-    for nL = 90
+    for nL = nLeapBank
         for stepsize = stepsizes
-            [betaPosterior,Times,acprat] = BLR_HMC(y,X,stepsize,nL,'2dBank');
+            [betaPosterior,Times,acprat] = BLR_HMC(stepsize,nL,'bankmarket');
         end
     end
 end
 
+%% HMC Simulation 2D plot
+HMCresultTable = zeros(5,5,nrep);
+stepsizes = [0.01 0.025 0.05 0.075 0.1];
 
-
-%% plots
-% 50D simulation
-SimuESSTable = zeros(nrep,length(nLeapSimu));
 for i = 1:length(nLeapSimu)
-    Files = dir(['Results/' '*' 'BLRSimulation_' num2str(nLeapSimu(i)) 'nLeap_' '*.mat']);
-    for j = 1:length(Files)
-        data = open(['Results/' Files(j).name]);
-        SimuESSTable(j,i) = min(CalculateESS(data.betaPosterior,length(data.betaPosterior)-1))/data.Times;
+    for j = 1:length(stepsizes)
+        Files = dir(['Results/' '*' '_HMC_BLR' 'simulation' '_' num2str(nLeapSimu(i)) 'nLeap' '_' num2str(stepsizes(j)) 'stepsize' '*.mat']);
+        for k = 1:length(Files)
+            data = open(['Results/' Files(k).name]);
+            nSamples = length(data.betaPosterior);
+            ESS = CalculateESS(data.betaPosterior,nSamples-1);
+            HMCresultTable(i,j,k) = min(ESS)/data.Times;
+        end
     end
 end
 
-SimuResults = quantile(SimuESSTable,[0.1 0.5 0.9]);
-LeHMCSimu = errorbar(nLeapSimu,SimuResults(2,:),SimuResults(2,:)-SimuResults(1,:),SimuResults(3,:)-SimuResults(2,:),'s--','linewidth',1,'markersize',4.5);
-set(LeHMCSimu,'markerfacecolor',get(LeHMCSimu,'color'));
-h = legend(LeHMCSimu,'HMC');
-set(h,'FontSize',12);
-xlabel('Number of leap-frog steps');
-ylabel('Minimum ESS per second');
-title('Simulation');
-xlim([0,30]);
-ylim([0,16]);
+HMCresultTable = mean(HMCresultTable,3);
+% 2D plot
+imagesc(stepsizes,nLeapSimu,HMCresultTable);
+set(gca,'Ydir','Normal');
 
-% a9a
-A9aESSTable = zeros(nrep,length(nLeapA9a));
+
+%% HMC bank 2D plot
+HMCresultTable = zeros(5,5,nrep);
+stepsizes = [0.004 0.008 0.012 0.014 0.015];
+
+for i = 1:length(nLeapBank)
+    for j = 1:length(stepsizes)
+        Files = dir(['Results/' '*' '_HMC_BLR' 'bankmarket' '_' num2str(nLeapBank(i)) 'nLeap' '_' num2str(stepsizes(j)) 'stepsize' '*.mat']);
+        for k = 1:length(Files)
+            data = open(['Results/' Files(k).name]);
+            nSamples = length(data.betaPosterior);
+            ESS = CalculateESS(data.betaPosterior,nSamples-1);
+            HMCresultTable(i,j,k) = min(ESS)/data.Times;
+        end
+    end
+end
+
+HMCresultTable = mean(HMCresultTable,3);
+% 2D plot
+imagesc(stepsizes,nLeapBank,HMCresultTable);
+set(gca,'Ydir','Normal');
+
+
+%% HMC a9a 2D plot
+HMCresultTable = zeros(5,5,5);
+nLeapA9a = [5,10,20,30,50];
+stepsizes = [0.004 0.008 0.012 0.016 0.020]; 
+
 for i = 1:length(nLeapA9a)
-    Files = dir(['Results/' '*' '_HMC_BLRa9a60d_' num2str(nLeapA9a(i)) 'nLeap_' '*.mat']);
-    for j = 1:length(Files)
-        data = open(['Results/' Files(j).name]);
-        A9aESSTable(j,i) = min(CalculateESS(data.betaPosterior,length(data.betaPosterior)-1))/data.Times;
+    for j = 1:length(stepsizes)
+        Files = dir(['Results/' '*' '_HMC_BLR' 'a9a60d' '_' num2str(nLeapA9a(i)) 'nLeap' '_' num2str(stepsizes(j)) 'stepsize' '*.mat']);
+        for k = 1:length(Files)
+            data = open(['Results/' Files(k).name]);
+            nSamples = length(data.betaPosterior);
+            ESS = CalculateESS(data.betaPosterior,nSamples-1);
+            HMCresultTable(i,j) = min(ESS)/data.Times;
+        end
     end
 end
 
-A9aResults = quantile(A9aESSTable,[0.1 0.5 0.9]);
-figure(2);
-LeHMCA9a = errorbar(nLeapA9a,A9aResults(2,:),A9aResults(2,:)-A9aResults(1,:),A9aResults(3,:)-A9aResults(2,:),'s--','linewidth',1,'markersize',4.5);
-set(LeHMCA9a,'markerfacecolor',get(LeHMCA9a,'color'));
-h = legend(LeHMCA9a,'HMC');
-set(h,'FontSize',12);
-title('Adult');
-xlabel('Number of leap-frog steps');
-ylabel('Minimum ESS per second');
-xlim([0,40]);
-
-
-% bank marketing
-BankESSTable = zeros(nrep,length(nLeapBank));
-for i = 1:length(nLeapA9a)
-    Files = dir(['Results/' '*' 'BLRBank_' num2str(nLeapBank(i)) 'nLeap_' '*.mat']);
-    for j = 1:length(Files)
-        data = open(['Results/' Files(j).name]);
-        BankESSTable(j,i) = min(CalculateESS(data.betaPosterior,length(data.betaPosterior)-1))/data.Times;
-    end
-end
-
-BankResults = quantile(BankESSTable,[0.1 0.5 0.9]);
-figure(3);
-LeHMCBank = errorbar(nLeapBank,BankResults(2,:),BankResults(2,:)-BankResults(1,:),BankResults(3,:)-BankResults(2,:),'s--','linewidth',1,'markersize',4.5);
-set(LeHMCBank,'markerfacecolor',get(LeHMCBank,'color'));
-h = legend(LeHMCBank,'HMC');
-set(h,'FontSize',12);
-title('Bank Marketing');
-xlabel('Number of leap-frog steps');
-ylabel('Minimum ESS per second');
-xlim([20,90]);
+HMCresultTable = mean(HMCresultTable,3);
+% 2D plot
+imagesc(stepsizes,nLeapA9a,HMCresultTable);
+set(gca,'Ydir','Normal');
