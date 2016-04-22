@@ -6,19 +6,9 @@ BurnIn = floor(0.5*NumOfIterations);
 ColStart= floor(0.1*NumOfIterations);
 NumOfLeapFrogSteps = nLeap;
 
-% simulated logistic regression
-% Trajectory = 2.1;
-% NumOfLeapFrogSteps = 3;
-% bank marketing data set
-% Trajectory = 2.4;
-% NumOfLeapFrogSteps = 6;
-% parameters for adult data set
-% Trajectory = 1.5;
-% NumOfLeapFrogSteps = 3;
 
 NumOfNewtonSteps = 5;
 alpha = 100;
-%StepSize = Trajectory/NumOfLeapFrogSteps;
 StepSize = stepsize;
 D = size(X,2);
 
@@ -155,11 +145,7 @@ for IterationNum = 1:NumOfIterations
         end
         ProposedMomentum = ProposedMomentum + (StepSize/2)*(-dphi + dQuadTerm');
     end
-       
-        
-%         ProposedMomentum = ProposedMomentum - StepSize/2.*BLR_U(y,X,ProposedBeta,1);
-%         ProposedBeta = ProposedBeta + StepSize.*((InvMass)*ProposedMomentum);
-%         ProposedMomentum = ProposedMomentum - StepSize/2.*BLR_U(y,X,ProposedBeta,1);
+     
     ProposedMomentum = -ProposedMomentum;
         
     % Calculate Potential
