@@ -5,36 +5,17 @@ load (['Data/' data]);
 NumOfIterations = 5000;
 BurnIn = floor(0.2*NumOfIterations);
 
-% simulated logistic regression
-% Trajectory = 1.08;
-% NumOfLeapFrogSteps = 2;
-% parameters for bank marketing data set
-% Trajectory = 2.4;
-% NumOfLeapFrogSteps = 6;
-% parameters for adult data set
-%Trajectory = 1.5;
 NumOfLeapFrogSteps = nLeap;
-
-% parameters for the partical indentification data set
-% Trajectory = 1.08;
-% NumOfLeapFrogSteps = 4;
 
 NumOfNewtonSteps = 5;
 alpha = 100;
-%StepSize = Trajectory/NumOfLeapFrogSteps;
 StepSize = stepsize;
 D = size(X,2);
 
 
 betaSaved = zeros(NumOfIterations-BurnIn,D);
-% Xtr = zeros(BurnIn-ColStart,D);
-% Ytr = zeros(BurnIn-ColStart,1);
 
 Startpoint = zeros(D,1);
-% Startpoint_adap = load('Startpoint_lrd28');
-% Startpoint_adap = Startpoint_adap.Startpoint;
-%load Startpoint_lrd25;
-%Startpoint = [-2;zeros(D-1,1)];
 CurrentBeta = Startpoint;
 CurrentU = U(y,X,CurrentBeta,alpha);
 % Pre-allocate memory for partial derivatives
@@ -43,18 +24,8 @@ for d = 1:D
 end
 Times = [0];
 
-% Random numbers
-% randn('state',2015);
-% rand('twister',2015);
-
-
-
-%%
 Proposed = 0;
 Accepted = 0;
-% betaSam = [CurrentBeta'];
-% REM = [norm(CurrentBeta'-meanTrue)/norm(meanTrue)];
-% tic
 
 for IterationNum = 1:NumOfIterations
     if mod(IterationNum,100) == 0
@@ -149,9 +120,6 @@ for IterationNum = 1:NumOfIterations
     end
        
         
-%         ProposedMomentum = ProposedMomentum - StepSize/2.*BLR_U(y,X,ProposedBeta,1);
-%         ProposedBeta = ProposedBeta + StepSize.*((InvMass)*ProposedMomentum);
-%         ProposedMomentum = ProposedMomentum - StepSize/2.*BLR_U(y,X,ProposedBeta,1);
     ProposedMomentum = -ProposedMomentum;
         
     % Calculate Potential
@@ -170,31 +138,16 @@ for IterationNum = 1:NumOfIterations
         
     end
 
-    % Start collection if required
-%     if IterationNum > ColStart && IterationNum <= BurnIn
-%         Xtr(IterationNum-ColStart,:) = CurrentBeta;
-%         Ytr(IterationNum-ColStart) = CurrentU;
-%     end
         
     % Save samples if required
-    %betaSaved(IterationNum,:) = CurrentBeta;
     if IterationNum > BurnIn
         betaSaved(IterationNum-BurnIn,:) = CurrentBeta;
     end
-    
-%     betaSam = [betaSam; CurrentBeta'];
-%     REM = [REM norm(mean(betaSam,1)-meanTrue)/norm(meanTrue)];
-%     Times = [Times;toc];
+
     
     % Start timer after burn-in
     if IterationNum == BurnIn
         disp('Burn-in complete, now drawing samples.')
-%         CurrentBeta = Startpoint_adap;
-%         CurrentU = BLR_U(y,X,CurrentBeta,alpha);
-
-%         base = min(Ytr); Ytr = Ytr - base;
-%         net = networkApprox([50,2000,1]);
-%         net = train(net,Xtr,Ytr,0.1);
        tic;
     end
 end
