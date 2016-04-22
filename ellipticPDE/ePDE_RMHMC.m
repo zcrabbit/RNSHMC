@@ -22,9 +22,6 @@ end
 %% 
 Proposed = 0;
 Accepted = 0;
-thetaSam = [CurrentTheta'];
-REM = [norm(CurrentTheta'-meanTrue)/norm(meanTrue)];
-tic;
 
 for IterationNum = 1:NumOfIterations
     if mod(IterationNum,100)==0
