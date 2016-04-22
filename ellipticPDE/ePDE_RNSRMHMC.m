@@ -6,14 +6,10 @@ NumOfIterations = 10000;
 BurnIn = floor(0.5*NumOfIterations);
 ColStart= floor(0.1*NumOfIterations);
 
-%Trajectory =  2.4;
-%NumOfLeapFrogSteps = 3;
 NumOfLeapFrogSteps = nLeap;
 NumOfNewtonSteps = 5;
 StepSize = stepsize;
-%StepSize = Trajectory/NumOfLeapFrogSteps;
 
-% H_HMC = zeros((NumOfIterations-BurnIn)*NumOfLeapFrogSteps,1);
 thetaSaved = zeros(NumOfIterations-BurnIn,D);
 Xtr = zeros(BurnIn-ColStart,D);
 Ytr = zeros(BurnIn-ColStart,1);
@@ -51,9 +47,6 @@ for IterationNum = 1:NumOfIterations
     else
         dU = transpose(gradient(net,ProposedTheta'));
         G = diag(diag(Hessian(net,ProposedTheta)));
-        %G = Hessian(net,ProposedTheta);
-        %G = (dU-ProposedTheta/sigmatheta^2)*transpose(dU-ProposedTheta/sigmatheta^2)+eye(D)/sigmatheta^2;
-        %d2U = Hessian(net,ProposedTheta);
         GDeriv = Hessian(net,ProposedTheta,1);
         
     end
@@ -142,10 +135,6 @@ for IterationNum = 1:NumOfIterations
             dQuadTerm(d) = 0.5*(ProposedMomentum'*InvGdG{d}*InvGMomentum);
         end
         ProposedMomentum = ProposedMomentum + (StepSize/2)*(-dphi + dQuadTerm');   
-
-%         ProposedMomentum = ProposedMomentum - StepSize/2 * transpose(gradient(net,ProposedTheta'));
-%         ProposedTheta = ProposedTheta + StepSize * (InvMass*ProposedMomentum);
-%         ProposedMomentum = ProposedMomentum - StepSize/2 * transpose(gradient(net,ProposedTheta'));
 
         
 

@@ -1,27 +1,19 @@
-function [REM, Times] = ePDE_RMHMC(y,PDE,sigmay,sigmatheta,D,meanTrue)
-
-NumOfIterations = 2000;
+function [thetaPosterior,Times,acprat] = ePDE_RMHMC(stepsize,nLeap)
+% load data
+load Data/ePDE
+NumOfIterations = 10000;
 BurnIn = floor(0.5*NumOfIterations);
-%ColStart= floor(0.1*NumOfIterations);
 
-Trajectory =  2.4;
-NumOfLeapFrogSteps = 3;
+NumOfLeapFrogSteps = nLeap;
 NumOfNewtonSteps = 5;
-StepSize = Trajectory/NumOfLeapFrogSteps;
+StepSize = stepsize;
 
-% H_HMC = zeros((NumOfIterations-BurnIn)*NumOfLeapFrogSteps,1);
 thetaSaved = zeros(NumOfIterations-BurnIn,D);
 
-% Initialize
-%Startpoint = randn(D,1);
 Startpoint = zeros(D,1);
 CurrentTheta = Startpoint;
 CurrentU = ePDE_U(y,CurrentTheta,PDE,sigmay,sigmatheta);
-Times = [0];
 
-% Random numbers
-randn('state',2015);
-rand('twister',2015);
 
 for d = 1:D
     GDeriv{d} = zeros(D);
@@ -122,12 +114,6 @@ for IterationNum = 1:NumOfIterations
         end
         ProposedMomentum = ProposedMomentum + (StepSize/2)*(-dphi + dQuadTerm');   
 
-%         ProposedMomentum = ProposedMomentum - StepSize/2 * transpose(gradient(net,ProposedTheta'));
-%         ProposedTheta = ProposedTheta + StepSize * (InvMass*ProposedMomentum);
-%         ProposedMomentum = ProposedMomentum - StepSize/2 * transpose(gradient(net,ProposedTheta'));
-
-        
-
     end
 
     
@@ -154,21 +140,16 @@ for IterationNum = 1:NumOfIterations
         thetaSaved(IterationNum-BurnIn,:) = CurrentTheta;
     end
     
-    thetaSam = [thetaSam; CurrentTheta'];
-    REM = [REM norm(mean(thetaSam,1)-meanTrue)/norm(meanTrue)];
-    Times = [Times;toc];
-    
     % Start timer after burn-in
     if IterationNum == BurnIn
         disp('Burn-in complete, now drawing samples.')
-        %tic;
+        tic;
     end
             
 end
-%Times = toc;
-
+Times = toc;
 thetaPosterior = thetaSaved;
 acprat = size(unique(thetaPosterior,'rows'),1)/(NumOfIterations-BurnIn);
 
 CurTime = fix(clock);
-save(['Results/Results_RMHMC_ePDE_'  '_' num2str(CurTime) '.mat'], 'StepSize', 'NumOfLeapFrogSteps', 'acprat', 'thetaPosterior', 'Times')
+save(['Results/Results_RMHMC_ePDE_' num2str(nLeap) 'nLeap_'  num2str(CurTime) '.mat'], 'StepSize', 'NumOfLeapFrogSteps', 'acprat', 'thetaPosterior', 'Times')
